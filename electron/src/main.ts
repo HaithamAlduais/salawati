@@ -1,10 +1,28 @@
+/**
+ * Electron Main Process - Desktop App Entry Point
+ * 
+ * This is the main process that creates the desktop window and manages
+ * the application lifecycle. It handles IPC communication with the renderer.
+ * 
+ * CONNECTIONS:
+ * - Creates BrowserWindow that loads the React app
+ * - Handles IPC calls from renderer process (preload.ts)
+ * - Manages app lifecycle (ready, closed, etc.)
+ * - Stores data using electron-store
+ * 
+ * SECURITY: Uses contextIsolation for secure renderer communication
+ * 
+ * TODO: Implement prayer time notifications and scheduling
+ */
 import { app, BrowserWindow, ipcMain, Notification } from 'electron';
 import * as path from 'path';
-import * as Store from 'electron-store';
+import Store from 'electron-store';
 import * as cron from 'node-cron';
 
+// Initialize persistent storage for app data
 const store = new Store();
 
+// Main application window
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow(): void {
