@@ -18,47 +18,88 @@
  * 
  * TODO: Implement Electron Store for data persistence
  */
-import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import React from 'react';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import TimeBlockGrid from './components/TimeBlockGrid';
 import TaskFilter from './components/TaskFilter';
+import Settings from './components/Settings';
+import { AppProvider, useAppContext } from './contexts/AppContext';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useDayCycle } from './hooks/useDayCycle';
-import { TaskFilterType } from './types';
 
-function App() {
-  // Global state for task filtering
-  const [selectedFilters, setSelectedFilters] = useState<TaskFilterType[]>([]);
-  
-  // Custom hooks for data management
-  const { prayerTimes, loading } = usePrayerTimes(); // Fetches prayer times
-  const { currentDayLabel, currentTime } = useDayCycle(); // Calculates Islamic day cycle
+// Inner App component that uses the context
+const AppContent: React.FC = () => {
+  const { selectedFilters, setFilters, isSettingsOpen, toggleSettings } = useAppContext();
+  const { prayerTimes, loading } = usePrayerTimes();
+  const { currentDayLabel, currentTime } = useDayCycle();
 
   return (
     <div className="app">
-      {/* Header shows clock, date, and dynamic Islamic day label */}
+      {/* Header with modern design */}
       <Header 
         currentTime={currentTime}
         dayLabel={currentDayLabel}
       />
       
       <div className="main-content">
-        {/* Task filter for showing tasks by day type */}
+        {/* Task filter component */}
         <TaskFilter 
           selectedFilters={selectedFilters}
-          onFilterChange={setSelectedFilters}
+          onFilterChange={setFilters}
         />
         
-        {/* Main grid showing 24-hour cycle of time blocks */}
+        {/* Main grid showing prayer time blocks */}
         <TimeBlockGrid 
           prayerTimes={prayerTimes}
           loading={loading}
           selectedFilters={selectedFilters}
         />
       </div>
+
+      {/* Settings Modal */}
+      <Settings 
+        isOpen={isSettingsOpen}
+        onClose={() => toggleSettings(false)}
+      />
+
+      {/* Toast notifications */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: 'rgba(20, 20, 24, 0.9)',
+            color: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '12px',
+            fontSize: '14px'
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#ffffff'
+            }
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff'
+            }
+          }
+        }}
+      />
     </div>
+  );
+};
+
+// Main App component with provider
+function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
 
